@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Long Châu - Kho Tổng</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div id="app">
+        <!-- Splash Screen -->
+        <section id="splash-screen" class="screen active">
+            <div class="splash-content">
+                <div class="logo-container">
+                    <div class="fpt-logo">
+                        <svg width="60" height="30" viewBox="0 0 450 200" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M0 0h120l30 80 30-80h120v40H180l-30 80h-30L90 40H0V0z" fill="#0054a6" />
+                            <path d="M330 0h120v40H360l-30 80h-30l30-80h-30V0z" fill="#f36f21" />
+                        </svg>
+                        <span>FPT Retail</span>
+                    </div>
+                    <div class="main-logo-text">
+                        <span class="sub-text">KHO TỔNG</span>
+                        <h1 class="brand-name">LONG CHÂU</h1>
+                    </div>
+                </div>
+            </div>
+            <div class="version-badge">RWA 1.1.39 +226 prod</div>
+        </section>
+
+        <!-- Home Screen -->
+        <section id="home-screen" class="screen">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-decoration">
+                    <img src="https://img.freepik.com/free-vector/blue-fireworks-background_23-2147573523.jpg"
+                        alt="Decoration" class="bg-pattern">
+                    <div class="mascots">
+                        <span class="mascot snake">🐍</span>
+                        <span class="mascot robot">🤖</span>
+                    </div>
+                </div>
+                <div class="header-main">
+                    <div class="user-info">
+                        <div class="user-avatar">NH</div>
+                        <div class="user-text">
+                            <div class="user-name">Nguyễn Tiến Hưng - 00334</div>
+                            <div class="user-sub">80001 - Tổng kho Miền Nam</div>
+                        </div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="header-btn" onclick="openSettings()">
+                            <i class="fa-solid fa-gear"></i>
+                        </button>
+                        <button class="header-btn">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="search-bar">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" placeholder="Tìm kiếm chức năng">
+                </div>
+            </header>
+
+            <main class="content-area">
+                <!-- Nhập - Xuất hàng -->
+                <section class="menu-section accordion">
+                    <div class="section-header" onclick="toggleAccordion(this)">
+                        <div class="section-title">
+                            <i class="fa-solid fa-clipboard-list"></i>
+                            <span>Nhập - Xuất hàng</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-up toggle-icon"></i>
+                    </div>
+                    <div class="menu-grid accordion-content">
+                        <div class="menu-item" onclick="showTransactions('import')">
+                            <div class="icon-wrapper blue">
+                                <i class="fa-solid fa-file-import"></i>
+                            </div>
+                            <span class="item-label">Nhập Hàng</span>
+                        </div>
+                        <div class="menu-item" onclick="showTransactions('export')">
+                            <div class="icon-wrapper orange">
+                                <i class="fa-solid fa-file-export"></i>
+                            </div>
+                            <span class="item-label">Xuất Hàng</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Danh Sách Nhu Cầu -->
+                <section class="menu-section accordion">
+                    <div class="section-header" onclick="toggleAccordion(this)">
+                        <div class="section-title">
+                            <i class="fa-solid fa-list-check"></i>
+                            <span>Danh Sách Nhu Cầu</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-up toggle-icon"></i>
+                    </div>
+                    <div class="menu-grid accordion-content">
+                        <div class="menu-item" onclick="showDemandDetails('Kho 1')">
+                            <div class="icon-wrapper blue">
+                                <i class="fa-solid fa-warehouse"></i>
+                            </div>
+                            <span class="item-label">Kho 1</span>
+                            <span class="rack-count-badge" id="kho1Count">0</span>
+                        </div>
+                        <div class="menu-item" onclick="showDemandDetails('Kho 2')">
+                            <div class="icon-wrapper orange">
+                                <i class="fa-solid fa-warehouse"></i>
+                            </div>
+                            <span class="item-label">Kho 2</span>
+                            <span class="rack-count-badge" id="kho2Count">0</span>
+                        </div>
+                        <div class="menu-item" onclick="showDemandDetails('Thùng Nguyên')">
+                            <div class="icon-wrapper light-blue">
+                                <i class="fa-solid fa-box-open"></i>
+                            </div>
+                            <span class="item-label">Thùng Nguyên</span>
+                            <span class="rack-count-badge" id="thungNguyenCount">0</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tồn Kho Location Rack -->
+                <section class="menu-section accordion">
+                    <div class="section-header" onclick="toggleAccordion(this)">
+                        <div class="section-title">
+                            <i class="fa-solid fa-boxes-stacked"></i>
+                            <span>Tồn Kho Location Rack</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-up toggle-icon"></i>
+                    </div>
+                    <div class="menu-grid accordion-content">
+                        <div class="menu-item" data-rack-type="empty" onclick="showRackDetails('empty')">
+                            <div class="icon-wrapper yellow">
+                                <i class="fa-solid fa-square"></i>
+                            </div>
+                            <span class="item-label">Vị Trí Trống</span>
+                            <span class="rack-count-badge" id="emptyRackCount">0</span>
+                        </div>
+                        <div class="menu-item" data-rack-type="occupied" onclick="showRackDetails('occupied')">
+                            <div class="icon-wrapper blue-dark">
+                                <i class="fa-solid fa-square-check"></i>
+                            </div>
+                            <span class="item-label">Vị Trí Có Hàng</span>
+                            <span class="rack-count-badge" id="occupiedRackCount">0</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tin tức -->
+                <section class="news-section">
+                    <div class="section-header-row">
+                        <h3 class="news-title">Tin tức</h3>
+                        <a href="#" class="view-all">Xem tất cả <i class="fa-solid fa-chevron-right"></i></a>
+                    </div>
+                    <p class="news-subtitle">Không thể bỏ lỡ</p>
+                    <div class="news-scroll">
+                        <div class="news-card">
+                            <img src="https://img.freepik.com/free-photo/pharmacist-checking-stock-pharmacy_23-2148942918.jpg"
+                                alt="News 1">
+                        </div>
+                        <div class="news-card">
+                            <img src="https://img.freepik.com/free-photo/group-pharmacists-working-pharmacy_23-2148942935.jpg"
+                                alt="News 2">
+                        </div>
+                    </div>
+                </section>
+            </main>
+
+            <!-- Bottom Navigation -->
+            <nav class="bottom-nav">
+                <a href="#" class="nav-item active">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Trang chủ</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <span>Tra cứu tồn</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fa-solid fa-bell"></i>
+                    <span>Thông báo</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fa-solid fa-user"></i>
+                    <span>Nhân viên</span>
+                </a>
+            </nav>
+        </section>
+
+        <!-- Rack Details Modal -->
+        <div id="rackDetailsModal" class="rack-modal">
+            <div class="rack-modal-content">
+                <div class="rack-modal-header">
+                    <button class="modal-back-btn" onclick="closeRackModal()">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <div class="modal-header-info">
+                        <h2 id="rackModalTitle">Chi Tiết Vị Trí</h2>
+                        <p id="rackModalSubtitle" class="rack-count-text">0 vị trí</p>
+                    </div>
+                    <button class="modal-close-btn" onclick="closeRackModal()">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+                <div class="rack-modal-body">
+                    <!-- Filter Bar -->
+                    <div class="rack-filter-bar">
+                        <div class="filter-group">
+                            <label>Dãy</label>
+                            <select id="filterAisle" onchange="applyRackFilters()">
+                                <option value="">Tất cả</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Cột</label>
+                            <select id="filterColumn" onchange="applyRackFilters()">
+                                <option value="">Tất cả</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Tầng</label>
+                            <select id="filterLevel" onchange="applyRackFilters()">
+                                <option value="">Tất cả</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="rackCardsContainer" class="rack-cards-grid">
+                        <!-- Cards will be dynamically inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Location Detail Modal -->
+        <div id="locationDetailModal" class="rack-modal">
+            <div class="rack-modal-content">
+                <div class="rack-modal-header">
+                    <button class="modal-back-btn" onclick="closeLocationDetailModal()">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <div class="modal-header-info">
+                        <h2 id="locationDetailTitle">Chi Tiết Vị Trí</h2>
+                        <p id="locationDetailSubtitle" class="rack-count-text"></p>
+                    </div>
+                    <button class="modal-close-btn" onclick="closeLocationDetailModal()">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+                <div class="rack-modal-body">
+                    <div id="locationDetailContent" class="location-detail-container">
+                        <!-- Detail content will be dynamically inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Confirmation Modal -->
+        <div id="exportConfirmModal" class="rack-modal">
+            <div class="rack-modal-content">
+                <div class="rack-modal-header">
+                    <button class="modal-back-btn" onclick="closeExportConfirmModal()">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <div class="modal-header-info">
+                        <h2>Xác Nhận Xuất Hàng</h2>
+                        <p id="exportConfirmLocation" class="rack-count-text"></p>
+                    </div>
+                    <button class="modal-close-btn" onclick="closeExportConfirmModal()">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+                <div class="rack-modal-body">
+                    <div class="qr-container">
+                        <div class="qr-item">
+                            <div id="qrLocation" class="qr-code"></div>
+                            <span>QR Vị Trí</span>
+                        </div>
+                        <div class="qr-item">
+                            <div id="qrPallet" class="qr-code"></div>
+                            <span>QR Pallet</span>
+                        </div>
+                    </div>
+                    <div id="exportConfirmDetails" class="export-details-summary">
+                        <!-- Summary info -->
+                    </div>
+                    <button class="confirm-action-btn" id="finalConfirmExportBtn">
+                        <i class="fa-solid fa-check-circle"></i>
+                        <span>Xác nhận xuất</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transactions Modal -->
+        <div id="transactionsModal" class="rack-modal">
+            <div class="rack-modal-content">
+                <div class="rack-modal-header">
+                    <button class="modal-back-btn" onclick="closeTransactionsModal()">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <div class="modal-header-info">
+                        <h2 id="transactionsModalTitle">Lịch Sử Giao Dịch</h2>
+                        <p id="transactionsModalSubtitle" class="rack-count-text">Hôm nay</p>
+                    </div>
+                    <button class="modal-close-btn" onclick="closeTransactionsModal()">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+                <div class="rack-modal-body">
+                    <div id="transactionsContainer" class="transactions-list">
+                        <!-- Transactions will be dynamically inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Import Form Modal -->
+        <div id="importFormModal" class="rack-modal">
+            <div class="rack-modal-content">
+                <div class="rack-modal-header">
+                    <button class="modal-back-btn" onclick="closeImportFormModal()">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <div class="modal-header-info">
+                        <h2>Nhập Hàng Vào Vị Trí</h2>
+                        <p id="importFormLocation" class="rack-count-text"></p>
+                    </div>
+                    <button class="modal-close-btn" onclick="closeImportFormModal()">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+                <div class="rack-modal-body">
+                    <form id="importForm" class="import-form-container" onsubmit="event.preventDefault();">
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-location-dot"></i> Vị trí</label>
+                            <input type="text" id="impLocation" readonly class="readonly-input">
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-pallet"></i> Số Pallet</label>
+                            <div class="input-with-icon">
+                                <input type="text" id="impPallet" placeholder="Nhập hoặc quét mã Pallet">
+                                <button type="button" class="icon-btn scanner-btn"><i
+                                        class="fa-solid fa-camera"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-barcode"></i> Barcode</label>
+                            <div class="input-with-icon">
+                                <input type="text" id="impBarcode" placeholder="Quét hoặc nhập Barcode"
+                                    oninput="lookupByBarcode(this.value)">
+                                <button type="button" class="icon-btn scanner-btn"><i
+                                        class="fa-solid fa-camera"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Mã Sản Phẩm</label>
+                                <input type="text" id="impProductCode" placeholder="Nhập mã SP"
+                                    oninput="lookupByProductCode(this.value)">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Tên Sản Phẩm</label>
+                            <input type="text" id="impProductName" placeholder="Nhập tên SP"
+                                oninput="lookupByProductName(this.value)">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Lot</label>
+                                <input type="text" id="impLot" placeholder="Nhập số Lot">
+                            </div>
+                            <div class="form-group">
+                                <label>Date (dd/mm/yyyy)</label>
+                                <input type="text" id="impDate" placeholder="31/12/2025">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Quy cách</label>
+                                <input type="number" id="impSpec" placeholder="0" oninput="calculateQuantity()">
+                            </div>
+                            <div class="form-group">
+                                <label>Chuẩn Rack</label>
+                                <input type="number" id="impRackStd" placeholder="0" oninput="calculateQuantity()">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Số lượng</label>
+                                <input type="number" id="impQuantity" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label>ĐVT</label>
+                                <input type="text" id="impUnit" placeholder="Thùng/Hộp">
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="form-btn cancel-btn"
+                                onclick="closeImportFormModal()">Hủy</button>
+                            <button type="button" class="form-btn reset-btn" onclick="resetImportForm()">Nhập
+                                lại</button>
+                            <button type="button" class="form-btn submit-btn" onclick="submitImport()">Nhập
+                                hàng</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Import Confirmation Modal -->
+        <div id="importConfirmModal" class="rack-modal">
+            <div class="rack-modal-content">
+                <div class="rack-modal-header">
+                    <button class="modal-back-btn" onclick="closeImportConfirmModal()">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <div class="modal-header-info">
+                        <h2>Xác Nhận Nhập Hàng Thành Công</h2>
+                        <p id="importConfirmLocation" class="rack-count-text"></p>
+                    </div>
+                    <button class="modal-close-btn" onclick="closeImportConfirmModal()">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+                <div class="rack-modal-body">
+                    <div class="qr-container">
+                        <div class="qr-item">
+                            <div id="impQrLocation" class="qr-code"></div>
+                            <span>QR Vị Trí</span>
+                        </div>
+                        <div class="qr-item">
+                            <div id="impQrPallet" class="qr-code"></div>
+                            <span>QR Pallet</span>
+                        </div>
+                    </div>
+                    <div id="importConfirmDetails" class="export-details-summary">
+                        <!-- Summary info -->
+                    </div>
+                    <button class="confirm-action-btn success" onclick="closeImportConfirmModal()">
+                        <i class="fa-solid fa-check-circle"></i>
+                        <span>Hoàn tất</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="rack-modal">
+            <div class="rack-modal-content">
+                <div class="rack-modal-header">
+                    <button class="modal-back-btn" onclick="closeSettings()">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <div class="modal-header-info">
+                        <h2>Cài Đặt Hệ Thống</h2>
+                        <p class="rack-count-text">Cấu hình Google Sheets</p>
+                    </div>
+                    <button class="modal-close-btn" onclick="closeSettings()">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+                <div class="rack-modal-body">
+                    <div class="import-form-container">
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-link"></i> Web App URL (Google Sheets)</label>
+                            <input type="text" id="googleSheetsUrl"
+                                placeholder="https://script.google.com/macros/s/.../exec">
+                            <p style="font-size: 11px; color: #888; margin-top: 5px;">
+                                Dán URL Web App sau khi bạn đã Deploy Apps Script.
+                            </p>
+                        </div>
+                        <div class="form-actions" style="grid-template-columns: 1fr 1fr;">
+                            <button type="button" class="form-btn cancel-btn" onclick="closeSettings()">Hủy</button>
+                            <button type="button" class="form-btn submit-btn" onclick="saveSettings()">Lưu cấu
+                                hình</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <script src="db.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

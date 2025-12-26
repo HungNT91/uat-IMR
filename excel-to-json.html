@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel to JSON Converter - Long Châu</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #0054a6;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 16px;
+        }
+
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        .file-upload {
+            border: 3px dashed #cbd5e1;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+        }
+
+        .file-upload:hover {
+            border-color: #0054a6;
+            background: #f1f5f9;
+        }
+
+        .file-upload.dragover {
+            border-color: #0054a6;
+            background: #e0f2fe;
+        }
+
+        .file-upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .file-upload-text {
+            color: #475569;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .file-upload-hint {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-info {
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .file-info.active {
+            display: block;
+        }
+
+        .file-name {
+            color: #0f172a;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .file-details {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .preview-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .preview-section.active {
+            display: block;
+        }
+
+        .preview-title {
+            color: #0f172a;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .table-container {
+            max-height: 400px;
+            overflow: auto;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            background: #0054a6;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0054a6 0%, #003d7a 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 84, 166, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .status-message {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #dcfce7;
+            color: #166534;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            display: block;
+        }
+
+        .instructions {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+
+        .instructions h3 {
+            color: #92400e;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            color: #78350f;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Excel to JSON Converter</h1>
+            <p>Chuyển đổi file Excel thành JSON Database</p>
+        </div>
+
+        <div class="upload-section">
+            <div class="file-upload" id="dropZone">
+                <div class="file-upload-icon">📁</div>
+                <div class="file-upload-text">Kéo thả file Excel vào đây hoặc click để chọn file</div>
+                <div class="file-upload-hint">Hỗ trợ: .xlsx, .xls</div>
+                <input type="file" id="fileInput" accept=".xlsx, .xls" multiple>
+            </div>
+
+            <div class="file-info" id="fileInfo">
+                <div class="file-name" id="fileName"></div>
+                <div class="file-details" id="fileDetails"></div>
+            </div>
+        </div>
+
+        <div class="preview-section" id="previewSection">
+            <div class="preview-title">📋 Preview dữ liệu (5 dòng đầu tiên)</div>
+            <div class="table-container">
+                <table id="previewTable">
+                    <thead id="tableHead"></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" id="convertBtn" disabled>
+                🔄 Chuyển đổi sang JSON
+            </button>
+            <button class="btn btn-secondary" id="resetBtn">
+                🔁 Reset
+            </button>
+        </div>
+
+        <div class="status-message" id="statusMessage"></div>
+
+        <div class="instructions">
+            <h3>📝 Hướng dẫn sử dụng:</h3>
+            <ol>
+                <li>Chọn file <strong>data.xlsx</strong> hoặc <strong>databarcode.xlsx</strong></li>
+                <li>Xem preview dữ liệu để kiểm tra</li>
+                <li>Click "Chuyển đổi sang JSON" để tạo file JSON</li>
+                <li>File JSON sẽ tự động tải xuống</li>
+                <li>Đặt file JSON vào thư mục dự án (cùng thư mục với index.html)</li>
+                <li>Lặp lại cho file thứ 2</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        let excelData = null;
+        let fileName = '';
+
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileNameEl = document.getElementById('fileName');
+        const fileDetailsEl = document.getElementById('fileDetails');
+        const previewSection = document.getElementById('previewSection');
+        const previewTable = document.getElementById('previewTable');
+        const tableHead = document.getElementById('tableHead');
+        const tableBody = document.getElementById('tableBody');
+        const convertBtn = document.getElementById('convertBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusMessage = document.getElementById('statusMessage');
+
+        // Click to upload
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        // Drag and drop
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        // Handle file
+        function handleFile(file) {
+            fileName = file.name;
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+
+                    // Get first sheet
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    excelData = XLSX.utils.sheet_to_json(firstSheet);
+
+                    // Show file info
+                    fileInfo.classList.add('active');
+                    fileNameEl.textContent = fileName;
+                    fileDetailsEl.textContent = `${excelData.length} dòng dữ liệu • Sheet: ${workbook.SheetNames[0]}`;
+
+                    // Show preview
+                    showPreview(excelData);
+
+                    // Enable convert button
+                    convertBtn.disabled = false;
+
+                    showStatus('success', '✅ File đã được tải lên thành công!');
+                } catch (error) {
+                    showStatus('error', '❌ Lỗi khi đọc file: ' + error.message);
+                }
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        // Show preview
+        function showPreview(data) {
+            if (data.length === 0) return;
+
+            previewSection.classList.add('active');
+
+            // Get headers
+            const headers = Object.keys(data[0]);
+
+            // Create table header
+            tableHead.innerHTML = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+
+            // Create table body (first 5 rows)
+            const previewData = data.slice(0, 5);
+            tableBody.innerHTML = previewData.map(row => {
+                return '<tr>' + headers.map(h => `<td>${row[h] || ''}</td>`).join('') + '</tr>';
+            }).join('');
+        }
+
+        // Convert to JSON
+        convertBtn.addEventListener('click', () => {
+            if (!excelData) return;
+
+            try {
+                const jsonString = JSON.stringify(excelData, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName.replace(/\.(xlsx|xls)$/, '.json');
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                showStatus('success', '✅ File JSON đã được tải xuống thành công!');
+            } catch (error) {
+                showStatus('error', '❌ Lỗi khi chuyển đổi: ' + error.message);
+            }
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            excelData = null;
+            fileName = '';
+            fileInput.value = '';
+            fileInfo.classList.remove('active');
+            previewSection.classList.remove('active');
+            convertBtn.disabled = true;
+            statusMessage.className = 'status-message';
+            statusMessage.style.display = 'none';
+        });
+
+        // Show status message
+        function showStatus(type, message) {
+            statusMessage.className = `status-message ${type}`;
+            statusMessage.textContent = message;
+        }
+    </script>
+</body>
+
+</html>
