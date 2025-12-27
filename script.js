@@ -2,26 +2,68 @@ document.addEventListener('DOMContentLoaded', async () => {
     const splashScreen = document.getElementById('splash-screen');
     const homeScreen = document.getElementById('home-screen');
 
+    // 🚀 NEW: Loading Animation Logic
+    const loadingBar = document.getElementById('loading-bar');
+    const loadingPercent = document.getElementById('loading-percent');
+    const loadingText = document.getElementById('loading-text');
+
+    let progress = 0;
+    const updateProgress = (target, text, duration) => {
+        return new Promise(resolve => {
+            const start = progress;
+            const diff = target - start;
+            const step = duration / diff;
+
+            if (loadingText && text) loadingText.textContent = text;
+
+            let current = start;
+            const timer = setInterval(() => {
+                current++;
+                progress = current;
+                if (loadingBar) loadingBar.style.width = `${current}%`;
+                if (loadingPercent) loadingPercent.textContent = `${current}%`;
+
+                if (current >= target) {
+                    clearInterval(timer);
+                    resolve();
+                }
+            }, step);
+        });
+    };
+
+    // Load sequences
+    await updateProgress(30, 'Đang kết nối server...', 400);
     // Load database during splash screen
     console.log('📦 Loading database...');
     await db.load();
-    console.log('✅ Database loaded successfully!');
-    console.log('📊 Data records:', db.count('data'));
-    console.log('📊 Barcode records:', db.count('databarcode'));
+    loadTransactions();
+    updateHomeTransactionsUI();
+    await updateProgress(60, 'Đang tải dữ liệu...', 600);
 
-    // Auto transition from Splash to Home after 2 seconds
+    // Update server status UI
+    const statusEl = document.getElementById('serverStatus');
+    if (statusEl) {
+        if (db.isServerActive) {
+            statusEl.innerHTML = '<i class="fa-solid fa-circle" style="font-size: 8px; color: #4CAF50;"></i> <span>Chế độ: Ghi file trực tiếp</span>';
+        } else {
+            statusEl.innerHTML = '<i class="fa-solid fa-circle" style="font-size: 8px; color: #f36f21;"></i> <span>Chế độ: Offline (LocalStorage)</span>';
+        }
+    }
+
+    await updateProgress(100, 'Sẵn sàng!', 300);
+
+    // Transition to Home
     setTimeout(() => {
         splashScreen.classList.remove('active');
         homeScreen.classList.add('active');
 
-        // Simple scale animation for entrance
         homeScreen.style.opacity = '0';
         homeScreen.style.display = 'flex';
         setTimeout(() => {
             homeScreen.style.transition = 'opacity 0.5s ease-in-out';
             homeScreen.style.opacity = '1';
         }, 50);
-    }, 2000);
+    }, 500);
 
     // Mock functionality for Bottom Nav
     const navItems = document.querySelectorAll('.nav-item');
@@ -829,35 +871,33 @@ async function confirmExport(locationCode) {
         pallet: item['Pallet'] || item['PALLET'] || ''
     };
 
-    // 📡 SYNC TO GOOGLE SHEETS IF ENABLED
-    if (db.scriptUrl) {
-        const syncResult = await db.syncRemote('export', { 'Vị Trí': locationCode });
-        if (!syncResult.success) {
-            console.warn('⚠️ Sync failed, but proceeding locally.');
-        }
-    }
-
-    // Initialize transactions if not exists
     if (!window.warehouseTransactions) window.warehouseTransactions = [];
-    window.warehouseTransactions.push(transaction);
+    window.warehouseTransactions.unshift(transaction);
+    saveTransactions();
 
-    // Update status in db
-    const statusKeys = ['Trạng Thái', 'Trạng thái', 'Status', 'Trang_thai'];
-    const statusKey = statusKeys.find(k => item.hasOwnProperty(k)) || 'Trạng Thái';
+    // 💾 LOCAL UPDATE
+    const updates = {
+        'status': 'Trống',
+        'productCode': '',
+        'productName': '',
+        'quantity': '',
+        'pallet': '',
+        'lot': '',
+        'date': '',
+        'unit': '',
+        'spec': ''
+        // Note: 'demand' (Nhu cầu) is preserved as it belongs to the location zone
+    };
 
-    item[statusKey] = 'Trống';
-
-    // Clear other fields
-    const fieldsToClear = ['Mã SP', 'Ma_SP', 'Tên SP', 'Ten_SP', 'Số Lượng', 'So_Luong', 'Lot', 'LOT', 'lot', 'Ngày', 'Ngay', 'Date', 'Pallet', 'PALLET', 'Nhu Cầu', 'Nhu_Cau', 'Nhu C u'];
-    fieldsToClear.forEach(f => {
-        if (item.hasOwnProperty(f)) item[f] = '';
-    });
+    console.log('💾 Saving export change to localStorage (Preserving Demand/Zone)...');
+    db.update('data', 'location', locationCode, updates);
 
     closeExportConfirmModal();
 
     // Close the rack details list modal if it's open, OR refresh it
     // For now, let's just refresh counts and cards
     updateRackInventoryCounts();
+    updateHomeTransactionsUI();
 
     // Refresh the list modal if it was open
     if (window.currentFilterType) {
@@ -1016,21 +1056,16 @@ async function submitImport() {
         'Quy đổi thùng': rackStd
     };
 
-    // 📡 SYNC TO GOOGLE SHEETS IF ENABLED
-    if (db.scriptUrl) {
-        const syncResult = await db.syncRemote('import', payload);
-        if (!syncResult.success) {
-            console.warn('⚠️ Sync failed, but proceeding locally.');
-        }
-    }
+    // 💾 LOCAL UPDATE
+    const headers = db.getColumns('data');
+    const statusKey = headers.find(h => h.toLowerCase().includes('trạng thái') || h.toLowerCase() === 'status') || 'Trạng Thái';
 
-    // Update status and fields
-    const statusKeys = ['Trạng Thái', 'Trạng thái', 'Status', 'Trang_thai'];
-    const statusKey = statusKeys.find(k => item.hasOwnProperty(k)) || 'Trạng Thái';
-    item[statusKey] = 'Có Hàng';
+    const finalPayload = { ...payload };
+    finalPayload[statusKey] = 'Có Hàng';
 
-    // Map fields
-    Object.assign(item, payload);
+    const updates = { ...payload, 'status': 'Có Hàng' };
+    console.log('💾 Saving import change to localStorage:', updates);
+    db.update('data', 'location', location, updates);
 
     // Add to transactions
     const transaction = {
@@ -1043,10 +1078,13 @@ async function submitImport() {
         pallet: pallet
     };
     if (!window.warehouseTransactions) window.warehouseTransactions = [];
-    window.warehouseTransactions.push(transaction);
+    window.warehouseTransactions.unshift(transaction);
+    saveTransactions();
 
     // Refresh UI
     updateRackInventoryCounts();
+    updateHomeTransactionsUI();
+
     if (window.currentFilterType) showRackDetails(window.currentFilterType);
 
     // Show Confirmation
@@ -1178,22 +1216,98 @@ function closeSettings() {
     document.getElementById('settingsModal').classList.remove('show');
 }
 
-function saveSettings() {
-    const url = document.getElementById('googleSheetsUrl').value.trim();
-    if (url && !url.startsWith('https://script.google.com/')) {
-        alert('URL không hợp lệ! Vui lòng dán link Web App của Google Apps Script.');
+function backupData() {
+    console.log('📦 Exporting data for backup...');
+    const data = {
+        data: db.data,
+        databarcode: db.databarcode,
+        exportTime: new Date().toISOString()
+    };
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `WMS_Backup_${new Date().toLocaleDateString().replace(/\//g, '-')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    alert('Đã tải xuống file backup dữ liệu thành công!');
+}
+
+function clearLocalData() {
+    if (confirm('Anh có chắc muốn xóa hết thay đổi và quay về dữ liệu gốc từ file JSON không?')) {
+        localStorage.removeItem('wms_data');
+        localStorage.removeItem('wms_databarcode');
+        alert('Đã reset dữ liệu! Hệ thống sẽ tải lại.');
+        location.reload();
+    }
+}
+function saveTransactions() {
+    localStorage.setItem('wms_transactions', JSON.stringify(window.warehouseTransactions || []));
+}
+
+function loadTransactions() {
+    const saved = localStorage.getItem('wms_transactions');
+    if (saved) {
+        window.warehouseTransactions = JSON.parse(saved);
+    } else {
+        window.warehouseTransactions = [];
+    }
+}
+
+/**
+ * Update the badges and recent list on the home screen
+ */
+function updateHomeTransactionsUI() {
+    const transactions = window.warehouseTransactions || [];
+
+    // Update Badges
+    const importCount = transactions.filter(t => t.type === 'import').length;
+    const exportCount = transactions.filter(t => t.type === 'export').length;
+
+    const impBadge = document.getElementById('importTransCount');
+    const expBadge = document.getElementById('exportTransCount');
+
+    if (impBadge) impBadge.textContent = importCount;
+    if (expBadge) expBadge.textContent = exportCount;
+
+    // Update Recent List (Last 5)
+    const container = document.getElementById('homeRecentTransactions');
+    if (!container) return;
+
+    if (transactions.length === 0) {
+        container.innerHTML = `
+            <div class="rack-empty-state" style="padding: 10px; font-size: 13px;">
+                <p>Chưa có giao dịch nào hôm nay.</p>
+            </div>
+        `;
         return;
     }
 
-    if (url) {
-        localStorage.setItem('google_sheets_url', url);
-        db.scriptUrl = url;
-        alert('Đã lưu cấu hình! Hệ thống sẽ tải lại dữ liệu từ Google Sheets.');
-        location.reload();
-    } else {
-        localStorage.removeItem('google_sheets_url');
-        db.scriptUrl = null;
-        alert('Đã xóa cấu hình! Hệ thống sẽ dùng file JSON nội bộ.');
-        location.reload();
-    }
+    const recent = transactions.slice(0, 5);
+    container.innerHTML = recent.map(t => {
+        const date = new Date(t.timestamp);
+        const timeStr = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+        const icon = t.type === 'import' ? 'fa-file-import' : 'fa-file-export';
+        const colorClass = t.type === 'import' ? 'blue' : 'orange';
+
+        return `
+            <div class="home-transaction-item" onclick="showTransactions('${t.type}')">
+                <div class="item-icon ${colorClass}">
+                    <i class="fa-solid ${icon}"></i>
+                </div>
+                <div class="item-info">
+                    <div class="item-main">
+                        <span class="item-loc">${t.location}</span>
+                        <span class="item-time">${timeStr}</span>
+                    </div>
+                    <div class="item-sub">${t.productName || 'Hàng hóa không tên'}</div>
+                </div>
+                <i class="fa-solid fa-chevron-right item-arrow"></i>
+            </div>
+        `;
+    }).join('');
 }

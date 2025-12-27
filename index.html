@@ -17,21 +17,25 @@
         <!-- Splash Screen -->
         <section id="splash-screen" class="screen active">
             <div class="splash-content">
-                <div class="logo-container">
-                    <div class="fpt-logo">
-                        <svg width="60" height="30" viewBox="0 0 450 200" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M0 0h120l30 80 30-80h120v40H180l-30 80h-30L90 40H0V0z" fill="#0054a6" />
-                            <path d="M330 0h120v40H360l-30 80h-30l30-80h-30V0z" fill="#f36f21" />
-                        </svg>
-                        <span>FPT Retail</span>
+                <div class="app-brand-title">
+                    <h1>INVENTORY</h1>
+                    <div class="brand-manager-line">
+                        <span>MANAGER</span>
+                        <div class="brand-dot"></div>
+                        <span>RACK</span>
                     </div>
-                    <div class="main-logo-text">
-                        <span class="sub-text">KHO TỔNG</span>
-                        <h1 class="brand-name">LONG CHÂU</h1>
+                </div>
+                <!-- Loading Progress Section -->
+                <div class="loading-container">
+                    <div class="loading-bar-wrapper">
+                        <div id="loading-bar" class="loading-bar-progress"></div>
+                    </div>
+                    <div class="loading-stats">
+                        <span id="loading-percent">0%</span>
+                        <span id="loading-text">Khởi tạo hệ thống...</span>
                     </div>
                 </div>
             </div>
-            <div class="version-badge">RWA 1.1.39 +226 prod</div>
         </section>
 
         <!-- Home Screen -->
@@ -48,10 +52,14 @@
                 </div>
                 <div class="header-main">
                     <div class="user-info">
-                        <div class="user-avatar">NH</div>
+                        <div class="user-avatar">LC</div>
                         <div class="user-text">
-                            <div class="user-name">Nguyễn Tiến Hưng - 00334</div>
-                            <div class="user-sub">80001 - Tổng kho Miền Nam</div>
+                            <div class="user-name">Quản Lý Kho - Long Châu</div>
+                            <div id="serverStatus" class="user-sub"
+                                style="display: flex; align-items: center; gap: 5px;">
+                                <i class="fa-solid fa-circle" style="font-size: 8px; color: #ccc;"></i>
+                                <span>Đang kiểm tra server...</span>
+                            </div>
                         </div>
                     </div>
                     <div class="header-actions">
@@ -85,12 +93,14 @@
                                 <i class="fa-solid fa-file-import"></i>
                             </div>
                             <span class="item-label">Nhập Hàng</span>
+                            <span class="rack-count-badge" id="importTransCount">0</span>
                         </div>
                         <div class="menu-item" onclick="showTransactions('export')">
                             <div class="icon-wrapper orange">
                                 <i class="fa-solid fa-file-export"></i>
                             </div>
                             <span class="item-label">Xuất Hàng</span>
+                            <span class="rack-count-badge" id="exportTransCount">0</span>
                         </div>
                     </div>
                 </section>
@@ -156,24 +166,20 @@
                     </div>
                 </section>
 
-                <!-- Tin tức -->
+                <!-- Giao dịch gần đây -->
                 <section class="news-section">
                     <div class="section-header-row">
-                        <h3 class="news-title">Tin tức</h3>
-                        <a href="#" class="view-all">Xem tất cả <i class="fa-solid fa-chevron-right"></i></a>
+                        <h3 class="news-title">Giao dịch gần đây</h3>
+                        <a href="#" class="view-all" onclick="showTransactions('import')">Xem tất cả <i
+                                class="fa-solid fa-chevron-right"></i></a>
                     </div>
-                    <p class="news-subtitle">Không thể bỏ lỡ</p>
-                    <div class="news-scroll">
-                        <div class="news-card">
-                            <img src="https://img.freepik.com/free-photo/pharmacist-checking-stock-pharmacy_23-2148942918.jpg"
-                                alt="News 1">
-                        </div>
-                        <div class="news-card">
-                            <img src="https://img.freepik.com/free-photo/group-pharmacists-working-pharmacy_23-2148942935.jpg"
-                                alt="News 2">
+                    <div id="homeRecentTransactions" class="home-transactions-list">
+                        <div class="rack-empty-state" style="padding: 10px; font-size: 13px;">
+                            <p>Chưa có giao dịch nào.</p>
                         </div>
                     </div>
                 </section>
+
             </main>
 
             <!-- Bottom Navigation -->
@@ -469,8 +475,8 @@
                         <i class="fa-solid fa-arrow-left"></i>
                     </button>
                     <div class="modal-header-info">
-                        <h2>Cài Đặt Hệ Thống</h2>
-                        <p class="rack-count-text">Cấu hình Google Sheets</p>
+                        <h2>Quản Lý Dữ Liệu</h2>
+                        <p class="rack-count-text">Sao lưu và Reset dữ liệu máy</p>
                     </div>
                     <button class="modal-close-btn" onclick="closeSettings()">
                         <i class="fa-solid fa-times"></i>
@@ -479,17 +485,27 @@
                 <div class="rack-modal-body">
                     <div class="import-form-container">
                         <div class="form-group">
-                            <label><i class="fa-solid fa-link"></i> Web App URL (Google Sheets)</label>
-                            <input type="text" id="googleSheetsUrl"
-                                placeholder="https://script.google.com/macros/s/.../exec">
-                            <p style="font-size: 11px; color: #888; margin-top: 5px;">
-                                Dán URL Web App sau khi bạn đã Deploy Apps Script.
-                            </p>
+                            <label><i class="fa-solid fa-file-export"></i> Xuất dữ liệu đã sửa</label>
+                            <p style="font-size: 12px; color: #666; margin-bottom: 10px;">Lưu các thay đổi
+                                anh đã
+                                Nhập/Xuất thành file JSON để dự phòng.</p>
+                            <button class="confirm-action-btn" onclick="backupData()"
+                                style="background: linear-gradient(135deg, #0054a6, #0072bc);">
+                                <i class="fa-solid fa-download"></i> Tải xuống Backup (.json)
+                            </button>
                         </div>
-                        <div class="form-actions" style="grid-template-columns: 1fr 1fr;">
-                            <button type="button" class="form-btn cancel-btn" onclick="closeSettings()">Hủy</button>
-                            <button type="button" class="form-btn submit-btn" onclick="saveSettings()">Lưu cấu
-                                hình</button>
+
+                        <hr style="margin: 15px 0; border: none; border-top: 1px solid #eee;">
+
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-trash-can"></i> Xóa dữ liệu chỉnh sửa</label>
+                            <p style="font-size: 12px; color: #666; margin-bottom: 10px;">Quay về dữ liệu
+                                gốc từ file
+                                JSON ban đầu.</p>
+                            <button class="confirm-action-btn" onclick="clearLocalData()"
+                                style="background: linear-gradient(135deg, #dc3545, #c82333);">
+                                <i class="fa-solid fa-rotate-left"></i> Reset Dữ Liệu
+                            </button>
                         </div>
                     </div>
                 </div>
