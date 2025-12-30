@@ -512,6 +512,25 @@
             </div>
         </div>
     </div>
+	<div id="transactionDetailModal" class="rack-modal">
+    <div class="rack-modal-content">
+        <div class="rack-modal-header">
+            <button class="modal-back-btn" onclick="closeTransactionDetailModal()">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <div class="modal-header-info">
+                <h2 id="transactionDetailTitle">Chi Tiết Giao Dịch</h2>
+                <p id="transactionDetailSubtitle" class="rack-count-text"></p>
+            </div>
+            <button class="modal-close-btn" onclick="closeTransactionDetailModal()">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+        <div id="transactionDetailBody" class="rack-modal-body">
+            <!-- Transaction slip content will be dynamically inserted here -->
+        </div>
+    </div>
+</div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <script src="db.js"></script>
